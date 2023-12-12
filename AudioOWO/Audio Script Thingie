@@ -1,0 +1,74 @@
+#include <iostream>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <vector>
+
+const std::vector<std::string> AUDIO_FILES = {
+    "1.wav", "2.wav", "3.wav", "4.wav", "5.wav", "6.wav", "7.wav", "8.wav", "9.wav",
+    "10.wav", "11.wav", "12.wav", "13.wav", "14.wav", "15.wav", "16.wav", "17.wav", "18.wav", "19.wav",
+    "20.wav", "21.wav", "22.wav", "CGGO.wav", "GO.wav"
+};
+
+int main() {
+    // Initialize SDL
+    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        std::cerr << "SDL initialization failed: " << SDL_GetError() << std::endl;
+        return 1;
+    }
+
+    // Initialize audio subsystem
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096) < 0) {
+        std::cerr << "SDL_mixer initialization failed: " << Mix_GetError() << std::endl;
+        SDL_Quit();
+        return 1;
+    }
+
+    // Load audio files
+    std::vector<Mix_Music*> music(AUDIO_FILES.size(), nullptr);
+
+    for (size_t i = 0; i < AUDIO_FILES.size(); ++i) {
+        music[i] = Mix_LoadMUS(AUDIO_FILES[i].c_str());
+        if (!music[i]) {
+            std::cerr << "Failed to load audio file " << AUDIO_FILES[i] << ": " << Mix_GetError() << std::endl;
+            for (size_t j = 0; j < i; ++j) {
+                Mix_FreeMusic(music[j]);
+            }
+            Mix_CloseAudio();
+            SDL_Quit();
+            return 1;
+        }
+    }
+
+    // Play audio in a loop until a stop message is received
+    bool playAudio = true;
+    size_t audioIndex = 0;
+
+    while (playAudio) {
+        if (Mix_PlayMusic(music[audioIndex], 1) == -1) {
+            std::cerr << "Mix_PlayMusic failed: " << Mix_GetError() << std::endl;
+            break;
+        }
+
+        // Wait for the audio to finish playing or until a stop message is received
+        while (Mix_PlayingMusic() && playAudio) {
+            // You can implement message checking here to stop the audio
+            // For simplicity, you can replace this with your message handling logic
+            // For example, you can use inter-process communication or a message queue
+            // to check for a stop message from another script.
+        }
+
+        Mix_HaltMusic(); // Stop the current audio
+        audioIndex = (audioIndex + 1) % AUDIO_FILES.size();
+    }
+
+    // Free resources
+    for (size_t i = 0; i < AUDIO_FILES.size(); ++i) {
+        Mix_FreeMusic(music[i]);
+    }
+
+    // Close audio subsystem and quit SDL
+    Mix_CloseAudio();
+    SDL_Quit();
+
+    return 0;
+}
