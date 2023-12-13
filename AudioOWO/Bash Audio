@@ -1,0 +1,1 @@
+g++ -o audio_player audio_player.cpp -lSDL2 -lSDL2_mixer
