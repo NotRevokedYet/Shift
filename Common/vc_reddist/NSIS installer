@@ -1,0 +1,27 @@
+# NSIS script to install SFML
+
+Outfile "SFML_Installer.exe"
+RequestExecutionLevel user
+
+Section
+    ; Set the installation directory
+    SetOutPath $INSTDIR
+
+    ; Copy SFML files to the installation directory
+    File /r "path/to/SFML"
+
+    ; Specify the files you want to include in the installer
+    File "YourSFMLProject.exe"
+
+    ; Create Start Menu shortcut
+    CreateDirectory "$SMPROGRAMS\YourSFMLProject"
+    CreateShortCut "$SMPROGRAMS\YourSFMLProject\YourSFMLProject.lnk" "$INSTDIR\YourSFMLProject.exe"
+
+SectionEnd
+
+Section "Uninstall"
+    ; Remove installed files
+    Delete $INSTDIR\*.*
+    Delete "$SMPROGRAMS\YourSFMLProject\YourSFMLProject.lnk"
+    RMDir "$SMPROGRAMS\YourSFMLProject"
+SectionEnd
